@@ -89,6 +89,46 @@ Playbooks are the primary mechanism for automating tasks. They define the desire
 * **AWX/Ansible Tower:** Centralized management and orchestration platform.
 * **Collections:** Share and reuse Ansible content.
 
-By mastering these core concepts and best practices, you can harness the full potential of Ansible to automate your infrastructure, improve efficiency, and reduce errors.
+
+Repository Structure
+
+ansible-documentation/
+├── README.md
+├── inventory/
+│   ├── examples/
+│   │   ├── ini_inventory.txt
+│   │   ├── yaml_inventory.yml
+│   │   └── dynamic_inventory.py
+│   └── ...
+├── playbooks/
+│   ├── examples/
+│   │   ├── install_httpd.yml
+│   │   └── ...
+│   └── ...
+├── roles/
+│   ├── common/
+│   │   ├── tasks/
+│   │   ├── handlers/
+│   │   ├── vars/
+│   │   └── defaults/
+│   ├── webserver/
+│   │   ├── tasks/
+│   │   ├── handlers/
+│   │   ├── vars/
+│   │   └── defaults/
+│   └── ...
+├── modules/
+│   ├── custom_modules/
+│   │   ├── my_module.py
+│   │   └── ...
+│   └── ...
+├── docs/
+│   ├── index.md
+│   ├── getting_started.md
+│   ├── core_concepts.md
+│   ├── best_practices.md
+│   └── ...
+└── .gitignore
+
  
 
