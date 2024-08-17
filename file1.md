@@ -275,6 +275,5 @@ else
 fi
 ```
 
-```
 
-You can use the above content directly in a `.md` file. Let me know if you need any additional formatting or modifications!
+ or modifications!
