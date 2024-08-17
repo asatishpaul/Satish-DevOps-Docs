@@ -90,8 +90,10 @@ Playbooks are the primary mechanism for automating tasks. They define the desire
 * **Collections:** Share and reuse Ansible content.
 
 
-Repository Structure
 
+### Repository Structure
+
+```
 ansible-documentation/
 ├── README.md
 ├── inventory/
@@ -129,6 +131,15 @@ ansible-documentation/
 │   ├── best_practices.md
 │   └── ...
 └── .gitignore
+```
 
- 
 
+### Documentation Structure
+
+Create Markdown files within the `docs` directory to cover the following topics:
+
+* **Getting Started:** Installation, basic configuration, and initial steps.
+* **Core Concepts:** Explain inventory, playbooks, modules, roles, and tasks.
+* **Best Practices:** Provide recommendations for efficient Ansible usage.
+* **Advanced Topics:** Cover more complex subjects like dynamic inventory, Ansible Vault, AWX/Ansible Tower, and collections.
+* **Troubleshooting:** Offer common issues and solutions.
