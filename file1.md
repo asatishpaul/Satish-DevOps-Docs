@@ -1,6 +1,3 @@
-Here’s how you can format the provided data into a GitHub-friendly Markdown (`.md`) file:
-
-```markdown
 # Linux Basics and Advanced Topics
 
 ## Basics of Navigating the File System
