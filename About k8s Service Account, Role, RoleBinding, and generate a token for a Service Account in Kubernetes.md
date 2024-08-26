@@ -50,13 +50,13 @@ metadata:
   namespace: webapps
 rules:
   - apiGroups:
-      - ""  # Core API group (for resources like pods)
-      - apps  # For deployments, daemonsets, etc.
-      - autoscaling  # For horizontal pod autoscalers
-      - batch  # For jobs and cronjobs
-      - extensions  # For older API versions of Deployments, Ingress, etc.
-      - policy  # For PodDisruptionBudgets, etc.
-      - rbac.authorization.k8s.io  # For RBAC resources like roles, rolebindings
+        - ""
+        - apps
+        - autoscaling
+        - batch
+        - extensions
+        - policy
+        - rbac.authorization.k8s.io
     resources:
       - pods
       - secrets
@@ -72,21 +72,15 @@ rules:
       - limitranges
       - namespaces
       - nodes
+      - pods
       - persistentvolumes
       - persistentvolumeclaims
+      - resourcequotas
       - replicasets
       - replicationcontrollers
-      - resourcequotas
       - serviceaccounts
       - services
-    verbs:
-      - "get"
-      - "list"
-      - "watch"
-      - "create"
-      - "update"
-      - "patch"
-      - "delete"
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ```
 
 - **`apiGroups:`**: Lists the API groups this Role applies to.
