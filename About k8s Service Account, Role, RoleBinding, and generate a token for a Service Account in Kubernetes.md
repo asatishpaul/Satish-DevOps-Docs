@@ -176,9 +176,20 @@ kubectl get secret jenkins-token -o jsonpath="{.data.token}" | base64 --decode
 
 ### **Summary**
 
-- **Service Accounts** provide a secure identity for pods, enabling them to interact with the Kubernetes API.
-- **Roles** define permissions within a namespace, ensuring that the service account can only perform necessary actions.
-- **RoleBindings** link roles to service accounts, activating the defined permissions for those accounts.
-- **Secrets and Tokens** allow service accounts to authenticate securely with the Kubernetes API, managing access to cluster resources.
+#### **Service Accounts**
+- **Purpose:** Provide an identity for processes running in pods, allowing them to interact securely with the Kubernetes API server.
+- **Importance:** Essential for ensuring that pods can authenticate and perform actions within the cluster based on the permissions assigned to their associated service accounts.
+
+#### **Roles**
+- **Purpose:** Define a set of permissions within a namespace, specifying what actions can be performed on various Kubernetes resources.
+- **Importance:** Allows fine-grained control over access within the namespace, enforcing the principle of least privilege and restricting actions to only what is necessary for the service account.
+
+#### **RoleBindings**
+- **Purpose:** Bind a Role to a Service Account, granting the permissions defined in the Role to that Service Account.
+- **Importance:** Activates the permissions for the service account, ensuring that it has the necessary access to perform actions on resources as defined by the Role.
+
+#### **Secrets and Tokens**
+- **Purpose:** Store sensitive information such as authentication tokens used by service accounts to authenticate with the Kubernetes API server.
+- **Importance:** Ensures secure authentication and access management for service accounts, facilitating controlled interactions with the Kubernetes API and maintaining cluster security.
 
 These components collectively ensure secure and controlled access to Kubernetes resources, implementing the principle of least privilege and enhancing the overall security posture of your Kubernetes environment.
