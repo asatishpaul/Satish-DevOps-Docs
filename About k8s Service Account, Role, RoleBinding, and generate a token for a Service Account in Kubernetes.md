@@ -1,4 +1,4 @@
-### Detailed Summary of Creating and Configuring Service Accounts, Roles, RoleBindings, and Tokens in Kubernetes
+### Creating and Configuring Service Accounts, Roles, RoleBindings, and Tokens in Kubernetes
 
 In Kubernetes, access control and resource management are crucial for maintaining security and ensuring the proper functioning of the cluster. The primary components for managing these aspects are **Service Accounts**, **Roles**, **RoleBindings**, and **Secrets**. Each plays a specific role in defining and enforcing permissions for applications and users. Here is a comprehensive summary of their creation, configuration, and importance:
 
