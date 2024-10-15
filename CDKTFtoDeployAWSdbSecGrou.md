@@ -1,4 +1,6 @@
-# Step-by-Step Documentation for To create dbSecurity Group using CDKTF
+# Step-by-Step Documentation to Create dbSecurity Group using CDKTF
+
+Here's a detailed guide on setting up a CDKTF project with TypeScript, addressing common errors, compatibility issues, and their solutions.
 
 #### Step 1: Initialize the Project
 
@@ -127,5 +129,3 @@ During the development process, you might encounter several compatibility issues
 #### Step 6: Conclusion
 
 By following these steps, you should have a functioning CDKTF project that sets up a security group for an RDS PostgreSQL database. Make sure to handle any errors that arise by referring to the solutions provided above, and always ensure that your dependencies are compatible with each other. 
-
-If you have any further questions or need assistance, feel free to ask!
