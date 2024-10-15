@@ -1,6 +1,4 @@
-Here's a detailed guide on setting up a CDKTF project with TypeScript, addressing common errors, compatibility issues, and their solutions.
-
-### Step-by-Step Documentation for CDKTF Project
+### Step-by-Step Documentation for To create dbSecurity Group using CDKTF
 
 #### Step 1: Initialize the Project
 
