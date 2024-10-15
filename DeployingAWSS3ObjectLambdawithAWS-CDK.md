@@ -1,46 +1,55 @@
-### Detailed Documentation: Deploying AWS S3 Object Lambda with AWS CDK
+---
 
-This document outlines the detailed steps to deploy an S3 Object Lambda using the AWS Cloud Development Kit (CDK), based on your current work history. We’ll cover the relevant AWS services, a deep dive into the TypeScript code structure, debugging issues you encountered, and a step-by-step guide to successfully deploying your S3 Object Lambda stack.
+# Detailed Documentation: Deploying AWS S3 Object Lambda with AWS CDK
+
+How to deploy an AWS S3 Object Lambda using the AWS Cloud Development Kit (CDK) with TypeScript. I've included explanations for each component of the code and organized the documentation for better readability.
+
+This document outlines the steps to deploy an S3 Object Lambda using the AWS Cloud Development Kit (CDK). We’ll cover relevant AWS services, delve into the TypeScript code structure, troubleshoot common issues, and provide a step-by-step guide for a successful deployment.
 
 ---
 
-### Table of Contents
+## Table of Contents
 
-1. **Introduction to AWS S3 Object Lambda**
-2. **Overview of the Project Setup**
-3. **Explanation of the TypeScript Code**
-   - AWS CDK Basics
-   - S3 Bucket and Access Points
-   - Lambda for Object Transformation
-4. **Common Errors and Troubleshooting**
-   - Asset Not Found Errors
-5. **Step-by-Step Guide to Deploy**
-   - Setting Up the Project
-   - Resolving Build Errors
-   - Deploying the CDK Stack
-6. **Conclusion**
+1. [Introduction to AWS S3 Object Lambda](#introduction-to-aws-s3-object-lambda)
+2. [Overview of the Project Setup](#overview-of-the-project-setup)
+3. [Explanation of the TypeScript Code](#explanation-of-the-typescript-code)
+   - [AWS CDK Basics](#aws-cdk-basics)
+   - [S3 Bucket and Access Points](#s3-bucket-and-access-points)
+   - [Lambda Function for Object Transformation](#lambda-function-for-object-transformation)
+4. [Common Errors and Troubleshooting](#common-errors-and-troubleshooting)
+   - [Asset Not Found Errors](#asset-not-found-errors)
+5. [Step-by-Step Guide to Deploy](#step-by-step-guide-to-deploy)
+   - [Setting Up the Project](#setting-up-the-project)
+   - [Resolving Build Errors](#resolving-build-errors)
+   - [Deploying the CDK Stack](#deploying-the-cdk-stack)
+6. [Conclusion](#conclusion)
 
 ---
 
-### 1. Introduction to AWS S3 Object Lambda
+## 1. Introduction to AWS S3 Object Lambda
 
-Amazon S3 Object Lambda allows you to process and transform data during retrieval from S3 using a Lambda function. Traditionally, you retrieve S3 objects directly from a bucket. However, with S3 Object Lambda, you can apply custom transformations (e.g., masking, filtering, format conversion) before delivering the content to the requester.
+Amazon S3 Object Lambda allows you to process and transform data during retrieval from S3 using an AWS Lambda function. This feature enables custom transformations, such as masking, filtering, and format conversion, before delivering content to the requester.
 
-### 2. Overview of the Project Setup
+---
 
-The project’s primary goal is to set up an AWS S3 bucket, enable access to it through an S3 Access Point, and then use S3 Object Lambda to process the data during retrieval. The entire infrastructure is defined using AWS CDK in TypeScript.
+## 2. Overview of the Project Setup
 
-### 3. Explanation of the TypeScript Code
+The project aims to establish an AWS S3 bucket, facilitate access through an S3 Access Point, and employ S3 Object Lambda to process data during retrieval. The entire infrastructure is defined using AWS CDK in TypeScript.
 
-The AWS CDK (Cloud Development Kit) allows you to define cloud infrastructure using modern programming languages like TypeScript.
+---
 
-Let’s break down the main components of the code:
+## 3. Explanation of the TypeScript Code
 
-#### 3.1. AWS CDK Basics
+The AWS CDK (Cloud Development Kit) enables the definition of cloud infrastructure using modern programming languages like TypeScript.
 
-At the core of the project, we are using CDK’s **Stack** class to define resources in AWS:
+### 3.1. AWS CDK Basics
+
+The core of the project utilizes the CDK’s **Stack** class to define AWS resources:
 
 ```typescript
+import { Stack, StackProps, CfnOutput, Aws } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+
 export class S3ObjectLambdaStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
@@ -48,84 +57,104 @@ export class S3ObjectLambdaStack extends Stack {
 }
 ```
 
-- **Stack**: Represents a single unit of deployment.
+- **Stack**: Represents a deployable unit of infrastructure.
 - **Scope**: The parent construct of the stack, usually the app itself.
 - **id**: A unique identifier for the stack.
 
-#### 3.2. S3 Bucket and Access Points
+### 3.2. S3 Bucket and Access Points
 
-The S3 bucket is the core storage component, and we are applying restrictive policies using Access Points to enforce fine-grained access control.
+The S3 bucket serves as the primary storage component. Access Points are created for fine-grained access control.
 
 ```typescript
 const bucket = new s3.Bucket(this, 'example-bucket', {
   accessControl: s3.BucketAccessControl.BUCKET_OWNER_FULL_CONTROL,
   encryption: s3.BucketEncryption.S3_MANAGED,
-  blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL
+  blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
 });
 ```
 
-- **S3 Bucket**: This stores the objects.
-- **Access Control**: Ensures the bucket owner has full control over the objects.
-- **Block Public Access**: Blocks public access to ensure data security.
+- **S3 Bucket**: Stores the objects.
+- **Access Control**: Ensures the bucket owner retains full control.
+- **Block Public Access**: Blocks public access to enhance data security.
 
-We then create an **S3 Access Point**, which is used to control access to the bucket more precisely than bucket policies.
+#### Access Point Policy
 
 ```typescript
-const accessPoint = `arn:aws:s3:${Aws.REGION}:${Aws.ACCOUNT_ID}:accesspoint/${S3_ACCESS_POINT_NAME}`;
+bucket.addToResourcePolicy(new iam.PolicyStatement({
+  actions: ['*'],
+  principals: [new iam.AnyPrincipal()],
+  resources: [
+    bucket.bucketArn,
+    bucket.arnForObjects('*'),
+  ],
+  conditions: {
+    'StringEquals': {
+      's3:DataAccessPointAccount': `${Aws.ACCOUNT_ID}`,
+    },
+  },
+}));
 ```
 
-This ensures only trusted services can access the bucket.
+This policy enables access control for the access points, restricting actions to authorized users.
 
-#### 3.3. Lambda for Object Transformation
+### 3.3. Lambda Function for Object Transformation
 
-A Lambda function is configured to process the objects being retrieved from the bucket:
+A Lambda function processes the objects retrieved from the bucket:
 
 ```typescript
 const retrieveTransformedObjectLambda = new lambda.Function(this, 'retrieveTransformedObjectLambda', {
   runtime: lambda.Runtime.NODEJS_20_X,
   handler: 'index.handler',
-  code: lambda.Code.fromAsset('resources/retrieve-transformed-object-lambda')
+  code: lambda.Code.fromAsset('resources/retrieve-transformed-object-lambda'),
 });
 ```
 
 - **Runtime**: Specifies Node.js version 20.x.
-- **Handler**: Defines the entry point (`index.handler`), where the code execution begins.
-- **Code**: Points to the location (`resources/retrieve-transformed-object-lambda`) where the Lambda code resides. This is the path that caused issues in the deployment (discussed later).
+- **Handler**: Entry point for the Lambda function.
+- **Code**: Path to the Lambda function's source code.
 
-The Lambda is granted the necessary permissions to write the transformed response back:
+#### Permissions for Lambda
 
 ```typescript
 retrieveTransformedObjectLambda.addToRolePolicy(new iam.PolicyStatement({
   effect: iam.Effect.ALLOW,
   resources: ['*'],
-  actions: ['s3-object-lambda:WriteGetObjectResponse']
+  actions: ['s3-object-lambda:WriteGetObjectResponse'],
 }));
 ```
 
-The Lambda will receive the S3 object, apply a transformation (such as masking data or changing format), and send the result to the requester.
+This allows the Lambda function to write the transformed response back to S3.
+
+#### Invocation Permissions
+
+```typescript
+retrieveTransformedObjectLambda.addPermission('invocationRestriction', {
+  action: 'lambda:InvokeFunction',
+  principal: new iam.AccountRootPrincipal(),
+  sourceAccount: Aws.ACCOUNT_ID,
+});
+```
+
+Restricts the invocation of the Lambda function to the account that owns it.
 
 ---
 
 ### 4. Common Errors and Troubleshooting
 
-During your work, you encountered the following error:
-
 #### **Error: Cannot Find Asset**
 
-The error occurred when running the CDK deploy command:
+You may encounter the following error during deployment:
 
 ```bash
 Error: Cannot find asset at /Users/satish/Desktop/Ironrim/s3-object-l-s/resources/retrieve-transformed-object-lambda
 ```
 
-This error means that the Lambda code directory specified in the CDK stack (`resources/retrieve-transformed-object-lambda`) did not exist or was improperly referenced.
+**Solution**:
 
-#### **Solution:**
-
-1. **Check the Path**: Ensure that the `resources/retrieve-transformed-object-lambda` directory exists.
-2. **Add the Required Files**: Inside the folder, ensure the presence of the Lambda handler file (`index.js` or `index.ts`).
+1. **Check the Path**: Verify that the `resources/retrieve-transformed-object-lambda` directory exists.
+2. **Add Required Files**: Ensure that the Lambda handler file (`index.js` or `index.ts`) is present in the directory.
 3. **Basic Lambda Code Example**:
-   
+
    ```javascript
    exports.handler = async (event) => {
      console.log('Received event:', JSON.stringify(event, null, 2));
@@ -139,15 +168,15 @@ This error means that the Lambda code directory specified in the CDK stack (`res
 
 ---
 
-### 5. Step-by-Step Guide to Deploy
+## 5. Step-by-Step Guide to Deploy
 
-#### 5.1. Setting Up the Project
+### 5.1. Setting Up the Project
 
-To deploy the project, follow these steps:
+Follow these steps to deploy the project:
 
-1. **Install AWS CDK and Dependencies:**
+1. **Install AWS CDK and Dependencies**:
 
-   If you haven’t installed AWS CDK, use the following command:
+   If you haven’t installed AWS CDK, run:
 
    ```bash
    npm install -g aws-cdk
@@ -159,33 +188,33 @@ To deploy the project, follow these steps:
    npm install
    ```
 
-2. **Check the Code Structure:**
+2. **Check Code Structure**:
 
-   Ensure your Lambda function code is placed in the correct directory (`resources/retrieve-transformed-object-lambda`) and the TypeScript files are error-free.
+   Ensure your Lambda function code is in `resources/retrieve-transformed-object-lambda` and that all TypeScript files are error-free.
 
-3. **Build the Project:**
+3. **Build the Project**:
 
    ```bash
    npm run build
    ```
 
-#### 5.2. Resolving Build Errors
+### 5.2. Resolving Build Errors
 
-While building the project, you encountered a type error:
+You may encounter type errors during the build process. For instance:
 
 ```bash
 error TS2724: '"../lib/s3-object-l-s-stack"' has no exported member named 'S3ObjectLSStack'. Did you mean 'S3ObjectLambdaStack'?
 ```
 
-The issue was that you were importing the wrong stack name. The correct import should be:
+**Solution**: Correct the import statement to reference the right stack name:
 
 ```typescript
 import { S3ObjectLambdaStack } from '../lib/s3-object-l-s-stack';
 ```
 
-After fixing this error, you should be able to build without issues.
+After fixing the error, you should be able to build without issues.
 
-#### 5.3. Deploying the CDK Stack
+### 5.3. Deploying the CDK Stack
 
 Once the build is successful, deploy the stack:
 
@@ -199,9 +228,17 @@ During the deployment, CDK will:
 - Deploy the Lambda function.
 - Configure the S3 Object Lambda access point.
 
-### 6. Conclusion
+---
 
-Deploying AWS S3 Object Lambda using AWS CDK simplifies infrastructure as code (IaC) and makes it easy to manage, deploy, and scale infrastructure. In this project, we learned how to set up an S3 bucket, associate it with an S3 Access Point, and transform objects during retrieval using AWS Lambda.
+## 6. Conclusion
 
-By addressing common issues like path errors and type mismatches, you can smoothly deploy your infrastructure and leverage the full potential of AWS’s serverless capabilities.
+Deploying AWS S3 Object Lambda with the AWS CDK simplifies infrastructure management through infrastructure as code (IaC). This project demonstrated how to set up an S3 bucket, associate it with an S3 Access Point, and transform objects during retrieval using AWS Lambda.
 
+By addressing common issues, such as path errors and type mismatches, you can efficiently deploy your infrastructure and leverage AWS’s serverless capabilities.
+
+---
+
+This structured documentation should provide a clear and comprehensive overview of the process involved in deploying an S3 Object Lambda using AWS CDK with TypeScript. 
+
+# Project Link - 
+https://github.com/aws-samples/aws-cdk-examples/blob/main/typescript/s3-object-lambda/lib/s3-object-lambda-stack.ts
