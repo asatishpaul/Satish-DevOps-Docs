@@ -1,4 +1,4 @@
-### Step-by-Step Documentation for To create dbSecurity Group using CDKTF
+# Step-by-Step Documentation for To create dbSecurity Group using CDKTF
 
 #### Step 1: Initialize the Project
 
