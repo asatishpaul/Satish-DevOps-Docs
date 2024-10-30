@@ -1,4 +1,4 @@
-# Terraform Security Group Module
+# Terraform Module for AWS Security Groups
 
 This document provides a detailed overview of the steps taken to create a Terraform module for managing AWS security groups, including explanations of relevant files, errors encountered, and their solutions.
 
