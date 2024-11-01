@@ -71,7 +71,7 @@ dynamic "ingress" {
   - If, however, you mistakenly set `enable_network_access = false`, all inbound traffic from the internet will be blocked, leading to service downtime.
 
 ---
-# Terraform Modules for directory and Files structure
+# Terraform Modules Overall Directory and Files structure
 
 This Terraform setup is designed to manage an AWS security group with both ingress and egress rules while retrieving the necessary VPC ID from AWS SSM (AWS Systems Manager Parameter Store). The configuration is organized into a root module and a child module for the security group.
 
