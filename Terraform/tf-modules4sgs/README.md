@@ -33,8 +33,8 @@ module "my_security_group" {
   # Pass the `rules` variable to the module
   ingress = [
     {
-      enable_network_access       = false
-      enable_internal_vpc_access  = false
+      enable_network_access       = true
+      enable_internal_vpc_access  = true
       enable_vpc_endpoint_access  = ["logs", "execute-api"]
       custom = [
         for rule_name, rule_values in var.rules : {
@@ -49,8 +49,8 @@ module "my_security_group" {
 
   egress = [
     {
-      enable_network_access       = false
-      enable_internal_vpc_access  = false
+      enable_network_access       = true
+      enable_internal_vpc_access  = true
       enable_vpc_endpoint_access  = ["logs", "execute-api"]
       custom = [
         for rule_name, rule_values in var.rules : {
