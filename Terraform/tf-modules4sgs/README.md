@@ -1,5 +1,77 @@
 ## Overview for the Terraform Modules for Security Group Configuration
 
+## Overview of the Terraform Configuration
+
+This Terraform setup is designed to manage an AWS security group that controls inbound and outbound traffic for your applications, utilizing a modular approach for reusability and clarity. Key features include dynamic rule generation based on input variables and the handling of access controls that govern whether rules are applied or not.
+
+### Critical Lines for Access Control
+
+The following lines are crucial for determining whether the security group allows or restricts access based on the provided flags:
+
+```hcl
+enable_network_access       = true
+enable_internal_vpc_access  = true
+enable_vpc_endpoint_access  = ["logs", "execute-api"]
+```
+
+### Importance of These Lines
+
+1. **Conditional Application of Rules**: 
+   - These variables act as flags that dictate whether ingress and egress rules should be applied to the security group. If these flags are set to `false`, the corresponding rules will not be generated or applied, potentially leaving your services inaccessible or improperly secured.
+   - When set to `true`, the security group will allow the specified traffic, ensuring that the application can communicate as intended. 
+
+2. **Dynamic Rule Handling**:
+   - The dynamic blocks for ingress and egress rules within the security group module rely on these flags to determine whether to include specific rules in the security group configuration.
+   - For example, if `enable_network_access` is `false`, the module will skip generating inbound rules that might otherwise allow traffic from the internet or other VPCs. This is critical for maintaining a secure network posture.
+
+3. **Flexibility in Configuration**:
+   - By controlling access through these flags, you gain the ability to adapt your security group configurations without having to modify the core rules. This can be particularly useful in different environments (e.g., development, testing, production) where access requirements may vary.
+   - You can toggle these settings depending on the specific needs of the application being deployed.
+
+### How These Lines Work in Context
+
+#### Security Group Module (`modules/security_group/main.tf`)
+
+The critical lines are part of the ingress and egress rules configuration. Here’s how they integrate into the dynamic rule application:
+
+```hcl
+# Ingress Rules
+dynamic "ingress" {
+  for_each = flatten([
+    for rule in var.ingress : [
+      for custom_rule in rule.custom : {
+        enable = rule.enable_network_access || rule.enable_internal_vpc_access || length(rule.enable_vpc_endpoint_access) > 0
+        from_port = custom_rule.from_port
+        to_port   = custom_rule.to_port
+        protocol  = custom_rule.protocol
+        cidr_blocks = rule.enable_network_access ? ["10.0.0.0/8"] : []  # Only allow specific CIDR if network access is enabled
+        description = custom_rule.description
+      } if rule.enable_network_access || rule.enable_internal_vpc_access || length(rule.enable_vpc_endpoint_access) > 0
+    ]
+  ])
+
+  content {
+    from_port   = ingress.value.from_port
+    to_port     = ingress.value.to_port
+    protocol    = ingress.value.protocol
+    cidr_blocks = ingress.value.cidr_blocks
+    description = ingress.value.description
+  }
+}
+```
+
+##### Explanation of the Dynamic Block:
+- **Conditional Logic**: The inner `if` statement checks the values of `enable_network_access`, `enable_internal_vpc_access`, and `length(rule.enable_vpc_endpoint_access)`. If all conditions evaluate to `false`, no ingress rule will be created.
+- **Enforcement of Access Rules**: The outer `for_each` iterates over the defined rules. If `enable` is `false`, the rule is ignored, meaning that traffic will not be allowed as per the defined security policy.
+
+### Example Scenario
+
+- **Scenario**: You have a web application that needs to be publicly accessible.
+  - If you set `enable_network_access = true`, the security group will allow HTTP (port 80) and HTTPS (port 443) traffic based on the rules defined in the `rules` variable.
+  - If, however, you mistakenly set `enable_network_access = false`, all inbound traffic from the internet will be blocked, leading to service downtime.
+
+---
+
 This Terraform setup is designed to manage an AWS security group with both ingress and egress rules while retrieving the necessary VPC ID from AWS SSM (AWS Systems Manager Parameter Store). The configuration is organized into a root module and a child module for the security group.
 
 ### Structure
