@@ -1,4 +1,5 @@
-## Overview for the Terraform Modules for Security Group Configuration
+# Access Management Made Simple   
+### `How Terraform Modules Control Security Group Permissions with Strategic Flags` 
 
 This Terraform setup is designed to manage an AWS security group that controls inbound and outbound traffic for your applications, utilizing a modular approach for reusability and clarity. Key features include dynamic rule generation based on input variables and the handling of access controls that govern whether rules are applied or not.
 
